@@ -1578,58 +1578,268 @@ textarea.form-control {
 }
 
 /* ==========================================================================
-   RESPONSIVE DESIGN (MOBILE & TABLET)
+   RESPONSIVE DESIGN SYSTEM (MOBILE & TABLET OPTIMIZATIONS)
    ========================================================================== */
 
-@media (max-width: 992px) {
+/* Tablet Optimization (768px to 1024px) */
+@media (max-width: 1024px) {
+  .hero-title {
+    font-size: 2.75rem;
+  }
+  
   .hero-grid, .about-content-grid, .contact-grid {
     grid-template-columns: 1fr;
-    gap: 2.5rem;
+    gap: 3rem;
+  }
+
+  .hero-img-card img {
+    height: 380px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .treatments-grid, .services-grid, .doctors-grid, .testimonials-grid, .clinics-list-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
   }
 
   .footer-grid {
     grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-  }
-
-  .hero-title {
-    font-size: 2.5rem;
+    gap: 2.5rem;
   }
 }
 
+/* Mobile & Small Tablet Optimization (< 768px) */
 @media (max-width: 768px) {
-  .mobile-menu-toggle {
-    display: block;
+  .section-padding {
+    padding: 3rem 0;
   }
 
-  .nav-menu {
-    display: none;
-    position: absolute;
-    top: 80px;
-    left: 0;
-    right: 0;
-    background: #ffffff;
-    flex-direction: column;
-    padding: 1.5rem;
-    box-shadow: var(--shadow-lg);
-    border-bottom: 1px solid var(--border-color);
+  .section-heading {
+    font-size: 1.75rem;
   }
 
-  .nav-menu.mobile-open {
-    display: flex;
+  .section-description {
+    font-size: 1rem;
   }
 
   .top-bar {
     display: none;
   }
 
-  .footer-grid {
+  .navbar {
+    height: 70px;
+  }
+
+  .logo-brand {
+    font-size: 1.3rem;
+  }
+
+  .logo-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 1.15rem;
+  }
+
+  .mobile-menu-toggle {
+    display: block;
+    font-size: 1.35rem;
+    padding: 0.5rem;
+    color: var(--text-dark);
+  }
+
+  .nav-menu {
+    display: none;
+    position: absolute;
+    top: 70px;
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    flex-direction: column;
+    padding: 1.25rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    border-bottom: 2px solid var(--primary-teal-border);
+    gap: 0.5rem;
+    z-index: 1000;
+  }
+
+  .nav-menu.mobile-open {
+    display: flex;
+    animation: slideDown 0.3s ease-out;
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .nav-link {
+    width: 100%;
+    text-align: left;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+  }
+
+  .nav-cta .btn-primary {
+    display: none; /* Mobile navigation uses sticky action bar or drawer CTA */
+  }
+
+  /* Hero Section Mobile */
+  .hero-section {
+    padding: 2.5rem 0 3.5rem 0;
+  }
+
+  .hero-title {
+    font-size: 2.1rem;
+    line-height: 1.2;
+  }
+
+  .hero-description {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .hero-actions .btn {
+    width: 100%;
+  }
+
+  .hero-trust-pills {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .hero-img-card img {
+    height: 280px;
+  }
+
+  .floating-trust-badge {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    margin-top: -30px;
+    margin-left: auto;
+    margin-right: auto;
+    width: calc(100% - 30px);
+    z-index: 2;
+  }
+
+  /* Stats Section Mobile */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+
+  .stat-value {
+    font-size: 1.75rem;
+  }
+
+  .stat-label {
+    font-size: 0.85rem;
+  }
+
+  /* Grid Layouts Mobile */
+  .treatments-grid, .services-grid, .doctors-grid, .testimonials-grid, .clinics-list-grid, .why-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .doctor-actions {
     grid-template-columns: 1fr;
   }
 
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem;
+  }
+
+  .filter-group {
+    min-width: 100%;
+  }
+
+  /* Gallery Mobile */
+  .gallery-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gallery-filters {
+    gap: 0.5rem;
+  }
+
+  .filter-btn {
+    padding: 0.45rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  /* Contact & Form Mobile */
+  .contact-info-card, .contact-form-card, .clinic-finder-box {
+    padding: 1.5rem;
+  }
+
+  /* Modals Mobile */
+  .modal-content {
+    padding: 1.5rem;
+    max-height: 92vh;
+    border-radius: var(--radius-md);
+  }
+
+  /* Chatbot Window Mobile */
   .chatbot-window {
-    width: calc(100vw - 40px);
+    width: calc(100vw - 32px);
+    height: 480px;
+    right: 16px;
+    bottom: 85px;
+  }
+
+  .chatbot-toggle-btn {
+    bottom: 20px;
     right: 20px;
-    bottom: 90px;
+    width: 56px;
+    height: 56px;
+    font-size: 1.5rem;
+  }
+
+  /* Footer Mobile */
+  .footer {
+    padding: 3rem 0 5rem 0;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
   }
 }
+
+/* Extra Small Devices (< 480px) */
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 1.85rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .modal-content {
+    padding: 1.25rem;
+  }
+
+  .doctor-img-wrapper {
+    height: 220px;
+  }
+}
+

@@ -3,7 +3,24 @@
 const { useState, useEffect, createElement: e } = React;
 
 function App() {
-  const [activePage, setActivePage] = useState('home');
+  const getInitialRoute = () => {
+    try {
+      const raw = (window.location.hash || '').replace(/^#\/?/, '').trim();
+      if (raw.startsWith('blog/')) {
+        const slug = raw.replace('blog/', '').trim();
+        return { page: 'blog-article', slug: slug || 'complete-dental-care-guide' };
+      }
+      if (raw === 'blog') return { page: 'blog', slug: 'complete-dental-care-guide' };
+      if (['home', 'about', 'doctors', 'services', 'treatments', 'gallery', 'testimonials', 'contact'].includes(raw)) {
+        return { page: raw, slug: 'complete-dental-care-guide' };
+      }
+    } catch (err) {}
+    return { page: 'home', slug: 'complete-dental-care-guide' };
+  };
+
+  const initialRoute = getInitialRoute();
+  const [activePage, setActivePage] = useState(initialRoute.page);
+  const [selectedBlogSlug, setSelectedBlogSlug] = useState(initialRoute.slug);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Modals & Active Selections
@@ -13,11 +30,125 @@ function App() {
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [bookingPreselect, setBookingPreselect] = useState({});
 
+  // Navigation and Article View Handlers
+  const viewArticle = (slug) => {
+    const targetSlug = slug || 'complete-dental-care-guide';
+    setSelectedBlogSlug(targetSlug);
+    setActivePage('blog-article');
+    window.location.hash = `#blog/${targetSlug}`;
+  };
+
+  const navigateToPage = (pageId) => {
+    setActivePage(pageId);
+    window.location.hash = `#${pageId}`;
+  };
+
   // Scroll to top on page change
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setMobileMenuOpen(false);
-  }, [activePage]);
+  }, [activePage, selectedBlogSlug]);
+
+  // URL Hash Routing Synchronization
+  useEffect(() => {
+    const handleHashSync = () => {
+      const rawHash = window.location.hash.replace(/^#\/?/, '').trim();
+      if (!rawHash) return;
+
+      if (rawHash.startsWith('blog/')) {
+        const slug = rawHash.replace('blog/', '').trim();
+        if (slug) {
+          setSelectedBlogSlug(slug);
+          setActivePage('blog-article');
+        }
+      } else if (rawHash === 'blog') {
+        setActivePage('blog');
+      } else if (['home', 'about', 'doctors', 'services', 'treatments', 'gallery', 'testimonials', 'contact'].includes(rawHash)) {
+        setActivePage(rawHash);
+      }
+    };
+
+    handleHashSync();
+    window.addEventListener('hashchange', handleHashSync);
+    return () => window.removeEventListener('hashchange', handleHashSync);
+  }, []);
+
+  // Dynamic SEO Titles, Descriptions & Structured Data Schema
+  useEffect(() => {
+    const descMeta = document.querySelector('meta[name="description"]');
+    let schemaElem = document.getElementById('dental-blog-schema');
+
+    if (activePage === 'blog-article') {
+      const blogList = (window.CLOVE_DATA && window.CLOVE_DATA.blogs) || [];
+      const blog = blogList.find(b => b.slug === selectedBlogSlug) || blogList[0];
+      
+      if (blog) {
+        document.title = `${blog.title} | Clove Dental Clinic`;
+        if (descMeta) {
+          descMeta.setAttribute('content', blog.shortDesc || "Complete dental care guide by Clove Dental covering preventive dental care, dental clinic treatments like root canal, dental implants, teeth cleaning, braces & oral health tips.");
+        }
+
+        if (!schemaElem) {
+          schemaElem = document.createElement('script');
+          schemaElem.id = 'dental-blog-schema';
+          schemaElem.type = 'application/ld+json';
+          document.head.appendChild(schemaElem);
+        }
+
+        const schemaData = {
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "BlogPosting",
+              "@id": `https://clovedental.in/blog/${blog.slug}`,
+              "headline": blog.title,
+              "description": blog.shortDesc,
+              "image": blog.image,
+              "author": {
+                "@type": "Person",
+                "name": blog.submittedBy,
+                "jobTitle": "Dental Healthcare & SEO Specialist"
+              },
+              "publisher": {
+                "@type": "MedicalOrganization",
+                "name": "Clove Dental",
+                "url": "https://clovedental.in"
+              },
+              "datePublished": "2026-10-01",
+              "dateModified": "2026-10-13",
+              "mainEntityOfPage": `https://clovedental.in/blog/${blog.slug}`,
+              "keywords": (blog.tags || []).join(", ")
+            },
+            {
+              "@type": "FAQPage",
+              "@id": `https://clovedental.in/blog/${blog.slug}#faq`,
+              "mainEntity": (blog.faqs || []).map(f => ({
+                "@type": "Question",
+                "name": f.question,
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": f.answer
+                }
+              }))
+            }
+          ]
+        };
+        schemaElem.textContent = JSON.stringify(schemaData);
+      }
+    } else if (activePage === 'blog') {
+      document.title = "Dental Health & Wellness Blog — Treatments, Prevention & Smile Tips | Clove Dental";
+      if (descMeta) {
+        descMeta.setAttribute('content', "Read the latest dental care blogs, expert treatment guides, and oral health wellness tips from Clove Dental's network of 1,700+ specialist dentists.");
+      }
+      if (schemaElem) schemaElem.remove();
+    } else {
+      document.title = "Clove Dental — India's Most Trusted Dental Clinic Network";
+      if (descMeta) {
+        descMeta.setAttribute('content', "Book an appointment at Clove Dental. Over 730+ clinics, 1700+ expert dentists, 30L+ happy patients across India offering painless Root Canal, Dental Implants, Braces & Aligners.");
+      }
+      if (schemaElem) schemaElem.remove();
+    }
+  }, [activePage, selectedBlogSlug]);
 
   const openBooking = (preselect = {}) => {
     setBookingPreselect(preselect);
@@ -30,6 +161,7 @@ function App() {
     { id: 'doctors', label: 'Doctors' },
     { id: 'services', label: 'Services' },
     { id: 'treatments', label: 'Treatments' },
+    { id: 'blog', label: 'Blog' },
     { id: 'gallery', label: 'Gallery' },
     { id: 'testimonials', label: 'Testimonials' },
     { id: 'contact', label: 'Contact' }
@@ -62,7 +194,7 @@ function App() {
     e('header', { className: 'sticky-header' },
       e('div', { className: 'container' },
         e('nav', { className: 'navbar' },
-          e('div', { className: 'logo-brand', onClick: () => setActivePage('home'), style: { cursor: 'pointer' } },
+          e('div', { className: 'logo-brand', onClick: () => navigateToPage('home'), style: { cursor: 'pointer' } },
             e('div', { className: 'logo-icon' }, e('i', { className: 'fas fa-tooth' })),
             e('div', { className: 'brand-text' }, 'clove', e('span', null, 'dental'))
           ),
@@ -71,8 +203,8 @@ function App() {
             navItems.map(item => 
               e('li', { key: item.id },
                 e('button', {
-                  className: `nav-link ${activePage === item.id ? 'active' : ''}`,
-                  onClick: () => setActivePage(item.id)
+                  className: `nav-link ${activePage === item.id || (item.id === 'blog' && activePage === 'blog-article') ? 'active' : ''}`,
+                  onClick: () => navigateToPage(item.id)
                 }, item.label)
               )
             )
@@ -94,21 +226,23 @@ function App() {
 
     // Main Router Content
     e('main', { className: 'page-container' },
-      activePage === 'home' && e(HomePage, { setActivePage, openBooking, setSelectedTreatment }),
+      activePage === 'home' && e(HomePage, { setActivePage, openBooking, setSelectedTreatment, viewArticle, navigateToPage }),
       activePage === 'about' && e(AboutPage, { openBooking }),
       activePage === 'doctors' && e(DoctorsPage, { setSelectedDoctor, openBooking }),
       activePage === 'services' && e(ServicesPage, { openBooking }),
       activePage === 'treatments' && e(TreatmentsPage, { setSelectedTreatment, openBooking }),
+      activePage === 'blog' && e(BlogPage, { setActivePage, viewArticle, openBooking, navigateToPage }),
+      activePage === 'blog-article' && e(BlogArticlePage, { slug: selectedBlogSlug, setActivePage, openBooking, setSelectedTreatment, viewArticle, navigateToPage }),
       activePage === 'gallery' && e(GalleryPage, { setSelectedGalleryItem }),
       activePage === 'testimonials' && e(TestimonialsPage, { openBooking }),
       activePage === 'contact' && e(ContactPage, { openBooking })
     ),
 
     // Floating Chatbot Widget
-    e(AIChatbot, { openBooking, setActivePage }),
+    e(AIChatbot, { openBooking, setActivePage, viewArticle }),
 
     // Footer
-    e(Footer, { setActivePage, openBooking }),
+    e(Footer, { setActivePage, openBooking, viewArticle, navigateToPage }),
 
     // Modals
     selectedDoctor && e(DoctorModal, { doctor: selectedDoctor, onClose: () => setSelectedDoctor(null), openBooking }),
@@ -119,7 +253,7 @@ function App() {
 }
 
 /* 1. HOME PAGE */
-function HomePage({ setActivePage, openBooking, setSelectedTreatment }) {
+function HomePage({ setActivePage, openBooking, setSelectedTreatment, viewArticle, navigateToPage }) {
   const data = window.CLOVE_DATA;
 
   return e('div', { className: 'home-page' },
@@ -235,6 +369,96 @@ function HomePage({ setActivePage, openBooking, setSelectedTreatment }) {
             'View All Dental Treatments ', e('i', { className: 'fas fa-chevron-right' })
           )
         )
+      )
+    ),
+
+    // Dental Health & Wellness Blog Section
+    e('section', { className: 'section-padding homepage-blog-section' },
+      e('div', { className: 'container' },
+        e('div', { className: 'section-title-wrapper' },
+          e('span', { className: 'section-subtitle' }, 'Dental Health & Wellness Blog'),
+          e('h2', { className: 'section-heading' }, 'Expert Guides & Healthy Smile Tips'),
+          e('p', { className: 'section-description' }, 'Evidence-based oral healthcare insights, prevention advice, and treatment guides from Clove Dental experts to keep your family smiling bright.')
+        ),
+
+        (() => {
+          const blogList = data.blogs || [];
+          const featured = blogList.find(b => b.featured) || blogList[0];
+          if (!featured) return null;
+
+          return e('div', { className: 'home-blog-container' },
+            // Featured Article Hero Banner
+            e('div', { className: 'featured-blog-banner' },
+              e('div', { className: 'featured-blog-media' },
+                e('img', { src: featured.image, alt: featured.imageAlt || featured.title }),
+                e('div', { className: 'featured-blog-badge-overlay' },
+                  e('i', { className: 'fas fa-award' }), ' Featured Clinical Guide'
+                )
+              ),
+              e('div', { className: 'featured-blog-content' },
+                e('div', { className: 'blog-meta-row' },
+                  e('div', { className: 'blog-meta-item' },
+                    e('i', { className: 'fas fa-user-edit' }), ' By ', e('strong', null, featured.submittedBy)
+                  ),
+                  e('div', { className: 'blog-meta-item' },
+                    e('i', { className: 'far fa-clock' }), ' ', featured.readTime
+                  ),
+                  e('div', { className: 'blog-meta-item' },
+                    e('i', { className: 'fas fa-calendar-alt' }), ' ', featured.publishedDate
+                  )
+                ),
+                e('h3', {
+                  className: 'featured-blog-title',
+                  style: { cursor: 'pointer' },
+                  onClick: () => viewArticle(featured.slug)
+                }, featured.title),
+                e('p', { className: 'featured-blog-excerpt' }, featured.shortDesc),
+                e('div', { className: 'blog-tags-row' },
+                  (featured.tags || []).slice(0, 4).map((tag, idx) =>
+                    e('span', { key: idx, className: 'blog-tag-pill' }, `#${tag}`)
+                  )
+                ),
+                e('div', { className: 'featured-blog-actions' },
+                  e('button', {
+                    className: 'btn btn-primary',
+                    onClick: () => viewArticle(featured.slug)
+                  },
+                    'Read Full Article ', e('i', { className: 'fas fa-arrow-right' })
+                  ),
+                  e('button', {
+                    className: 'btn btn-outline',
+                    onClick: () => navigateToPage('blog')
+                  },
+                    'View All Articles ', e('i', { className: 'fas fa-book-open' })
+                  )
+                )
+              )
+            ),
+
+            // Companion Insights Grid
+            e('div', { className: 'home-blog-secondary-grid' },
+              blogList.filter(b => !b.featured).slice(0, 3).map((item) =>
+                e('div', { key: item.id, className: 'blog-mini-card' },
+                  e('div', null,
+                    e('div', { className: 'blog-mini-category' }, item.category),
+                    e('h4', {
+                      style: { cursor: 'pointer' },
+                      onClick: () => viewArticle(item.slug)
+                    }, item.title),
+                    e('p', null, item.shortDesc)
+                  ),
+                  e('div', { className: 'blog-mini-footer' },
+                    e('span', null, e('i', { className: 'far fa-clock' }), ' ', item.readTime),
+                    e('button', {
+                      className: 'blog-link-btn',
+                      onClick: () => viewArticle(item.slug)
+                    }, 'Read More ', e('i', { className: 'fas fa-chevron-right' }))
+                  )
+                )
+              )
+            )
+          );
+        })()
       )
     )
   );
@@ -731,9 +955,842 @@ function ContactPage({ openBooking }) {
     )
   );
 }
+/* 8. BLOG PAGES */
+
+/* DEDICATED BLOG LISTING PAGE */
+function BlogPage({ setActivePage, viewArticle, openBooking, navigateToPage }) {
+  const data = window.CLOVE_DATA;
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+
+  const categories = ['All', 'Dental Health & Prevention', 'Treatments & Procedures', 'Restorative Dentistry'];
+
+  const blogList = data.blogs || [];
+  const filteredBlogs = blogList.filter(blog => {
+    const matchesCategory = selectedCategory === 'All' || blog.category === selectedCategory;
+    const matchesSearch = !searchQuery.trim() || 
+      blog.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      blog.shortDesc.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (blog.tags && blog.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())));
+    return matchesCategory && matchesSearch;
+  });
+
+  const featuredBlog = blogList.find(b => b.featured) || blogList[0];
+
+  return e('div', { className: 'blog-listing-page' },
+    // Hero Header
+    e('section', { className: 'blog-listing-hero' },
+      e('div', { className: 'container' },
+        e('div', { className: 'blog-hero-content' },
+          e('div', { className: 'blog-hero-badge' },
+            e('i', { className: 'fas fa-newspaper' }), ' Clove Dental Health Editorial'
+          ),
+          e('h1', null, 'Dental Health & Wellness Blog'),
+          e('p', null, 'Expert clinical guides, preventive oral healthcare tips, and the latest treatment insights written and reviewed by experienced dental specialists.')
+        )
+      )
+    ),
+
+    // Search and Filter Bar
+    e('section', { className: 'blog-controls-bar' },
+      e('div', { className: 'container' },
+        e('div', { className: 'blog-controls-wrapper' },
+          e('div', { className: 'blog-search-box' },
+            e('i', { className: 'fas fa-search' }),
+            e('input', {
+              type: 'text',
+              placeholder: 'Search dental articles, treatments, tips...',
+              value: searchQuery,
+              onChange: (ev) => setSearchQuery(ev.target.value)
+            })
+          ),
+          e('div', { className: 'blog-category-pills' },
+            categories.map(cat =>
+              e('button', {
+                key: cat,
+                className: `category-filter-btn ${selectedCategory === cat ? 'active' : ''}`,
+                onClick: () => setSelectedCategory(cat)
+              }, cat)
+            )
+          )
+        )
+      )
+    ),
+
+    // Blog Listing Grid
+    e('section', { className: 'section-padding', style: { paddingTop: '3rem' } },
+      e('div', { className: 'container' },
+        // Featured Highlight (if in All and no search)
+        selectedCategory === 'All' && !searchQuery.trim() && featuredBlog &&
+          e('div', { className: 'featured-blog-banner', style: { marginBottom: '3.5rem' } },
+            e('div', { className: 'featured-blog-media' },
+              e('img', { src: featuredBlog.image, alt: featuredBlog.imageAlt || featuredBlog.title }),
+              e('div', { className: 'featured-blog-badge-overlay' },
+                e('i', { className: 'fas fa-star' }), ' Featured Clinical Guide'
+              )
+            ),
+            e('div', { className: 'featured-blog-content' },
+              e('div', { className: 'blog-meta-row' },
+                e('div', { className: 'blog-meta-item' },
+                  e('i', { className: 'fas fa-user-edit' }), ' By ', e('strong', null, featuredBlog.submittedBy)
+                ),
+                e('div', { className: 'blog-meta-item' },
+                  e('i', { className: 'far fa-clock' }), ' ', featuredBlog.readTime
+                ),
+                e('div', { className: 'blog-meta-item' },
+                  e('i', { className: 'fas fa-folder-open' }), ' ', featuredBlog.category
+                )
+              ),
+              e('h2', {
+                className: 'featured-blog-title',
+                style: { cursor: 'pointer' },
+                onClick: () => viewArticle(featuredBlog.slug)
+              }, featuredBlog.title),
+              e('p', { className: 'featured-blog-excerpt' }, featuredBlog.shortDesc),
+              e('div', { className: 'blog-tags-row' },
+                (featuredBlog.tags || []).slice(0, 5).map((t, i) =>
+                  e('span', { key: i, className: 'blog-tag-pill' }, `#${t}`)
+                )
+              ),
+              e('div', { className: 'featured-blog-actions' },
+                e('button', {
+                  className: 'btn btn-primary',
+                  onClick: () => viewArticle(featuredBlog.slug)
+                }, 'Read Full Article ', e('i', { className: 'fas fa-arrow-right' })),
+                e('button', {
+                  className: 'btn btn-outline',
+                  onClick: () => openBooking()
+                }, 'Book Consultation')
+              )
+            )
+          ),
+
+        // Section Title for Articles
+        e('div', { className: 'section-title-wrapper', style: { marginBottom: '2rem', textAlign: 'left' } },
+          e('h3', { style: { fontSize: '1.65rem' } },
+            searchQuery ? `Search Results for "${searchQuery}" (${filteredBlogs.length})` :
+            selectedCategory === 'All' ? 'All Dental Articles & Guides' : `${selectedCategory} Articles (${filteredBlogs.length})`
+          )
+        ),
+
+        filteredBlogs.length === 0 ?
+          e('div', { style: { textAlign: 'center', padding: '4rem 1rem', background: '#FFFFFF', borderRadius: 'var(--radius-lg)' } },
+            e('i', { className: 'fas fa-search', style: { fontSize: '3rem', color: 'var(--text-light)', marginBottom: '1rem' } }),
+            e('h3', null, 'No articles found'),
+            e('p', null, 'Try a different search term or category filter.'),
+            e('button', {
+              className: 'btn btn-outline',
+              style: { marginTop: '1.25rem' },
+              onClick: () => { setSearchQuery(''); setSelectedCategory('All'); }
+            }, 'Reset Filters')
+          ) :
+          e('div', { className: 'blog-cards-grid' },
+            filteredBlogs.map(blog =>
+              e('div', { key: blog.id, className: 'blog-card' },
+                e('div', { className: 'blog-card-media', onClick: () => viewArticle(blog.slug), style: { cursor: 'pointer' } },
+                  e('img', { src: blog.image, alt: blog.imageAlt || blog.title }),
+                  e('span', { className: 'blog-card-category-badge' }, blog.category)
+                ),
+                e('div', { className: 'blog-card-body' },
+                  e('div', { className: 'blog-meta-row', style: { marginBottom: '0.65rem' } },
+                    e('div', { className: 'blog-meta-item' }, e('i', { className: 'fas fa-user' }), ' ', blog.submittedBy.split('(')[0]),
+                    e('div', { className: 'blog-meta-item' }, e('i', { className: 'far fa-clock' }), ' ', blog.readTime)
+                  ),
+                  e('h3', {
+                    style: { cursor: 'pointer' },
+                    onClick: () => viewArticle(blog.slug)
+                  }, blog.title),
+                  e('p', null, blog.shortDesc),
+                  e('div', { className: 'blog-card-footer' },
+                    e('button', {
+                      className: 'blog-link-btn',
+                      onClick: () => viewArticle(blog.slug)
+                    }, 'Read More ', e('i', { className: 'fas fa-chevron-right' })),
+                    e('span', { style: { fontSize: '0.8rem', color: 'var(--text-light)' } }, blog.publishedDate)
+                  )
+                )
+              )
+            )
+          )
+      )
+    ),
+
+    // Banner CTA
+    e('section', { style: { padding: '0 0 5rem 0' } },
+      e('div', { className: 'container' },
+        e('div', { className: 'article-cta-banner', style: { margin: 0 } },
+          e('span', { className: 'article-cta-badge' }, e('i', { className: 'fas fa-tooth' }), ' Trusted by 30 Lakh+ Patients'),
+          e('h3', null, 'Take the Next Step Towards a Healthier Smile'),
+          e('p', null, 'Book a comprehensive dental consultation at your nearest Clove Dental clinic today and receive personalized care from India\'s leading dental specialists.'),
+          e('button', {
+            className: 'btn-cta-large',
+            onClick: () => openBooking()
+          }, e('i', { className: 'fas fa-calendar-check' }), ' BOOK A DENTAL CONSULTATION')
+        )
+      )
+    )
+  );
+}
+
+/* FULL BLOG ARTICLE PAGE (PRESERVING COMPLETE ORIGINAL PDF CONTENT) */
+function BlogArticlePage({ slug, setActivePage, openBooking, setSelectedTreatment, viewArticle, navigateToPage }) {
+  const data = window.CLOVE_DATA;
+  const blogList = data.blogs || [];
+  const blog = blogList.find(b => b.slug === slug) || blogList[0];
+
+  const [activeFaq, setActiveFaq] = useState(0);
+  const [marketingOpen, setMarketingOpen] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  const handleCopyLink = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(window.location.href);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2500);
+    }
+  };
+
+  if (!blog) return null;
+
+  return e('article', { className: 'article-page' },
+    // Breadcrumbs
+    e('div', { className: 'article-breadcrumb-bar' },
+      e('div', { className: 'container' },
+        e('div', { className: 'article-breadcrumb' },
+          e('a', { href: '#home', onClick: (ev) => { ev.preventDefault(); navigateToPage('home'); } }, 'Home'),
+          e('i', { className: 'fas fa-chevron-right' }),
+          e('a', { href: '#blog', onClick: (ev) => { ev.preventDefault(); navigateToPage('blog'); } }, 'Blog'),
+          e('i', { className: 'fas fa-chevron-right' }),
+          e('span', { style: { color: 'var(--text-dark)', fontWeight: '600' } }, blog.title)
+        )
+      )
+    ),
+
+    // Article Header
+    e('header', { className: 'article-header-section' },
+      e('div', { className: 'container' },
+        e('div', { className: 'article-doc-badge' },
+          e('i', { className: 'fas fa-file-lines' }),
+          ' Submitted By: ', e('strong', null, blog.submittedBy), ' | Brand: ', e('strong', null, blog.brand), ' | ', blog.documentType
+        ),
+        e('h1', { className: 'article-main-title' }, blog.title),
+        e('p', { className: 'article-lead-subtitle' }, blog.subtitle),
+
+        e('div', { className: 'article-meta-card' },
+          e('div', { className: 'article-author-info' },
+            e('div', { className: 'author-avatar' }, 'P'),
+            e('div', { className: 'author-details' },
+              e('h4', null, blog.submittedBy),
+              e('p', null, 'Clove Dental Healthcare & SEO Specialist • Reviewed by Dental Editorial Board')
+            )
+          ),
+
+          e('div', { className: 'article-metrics' },
+            e('div', null, e('i', { className: 'far fa-clock' }), ' ', e('strong', null, blog.readTime)),
+            e('div', null, e('i', { className: 'far fa-calendar' }), ' ', blog.publishedDate),
+            e('div', null, e('i', { className: 'fas fa-shield-halved', style: { color: '#10B981' } }), ' Doctor Verified')
+          ),
+
+          e('div', { className: 'article-share-actions' },
+            e('button', {
+              className: 'share-btn',
+              title: 'Copy Link',
+              onClick: handleCopyLink
+            }, e('i', { className: copiedLink ? 'fas fa-check' : 'fas fa-link' })),
+            copiedLink && e('span', { style: { fontSize: '0.8rem', color: 'var(--primary-teal)', fontWeight: '700' } }, 'Copied!'),
+            e('a', {
+              className: 'share-btn',
+              title: 'Share on WhatsApp',
+              href: `https://api.whatsapp.com/send?text=${encodeURIComponent(blog.title + ' ' + window.location.href)}`,
+              target: '_blank',
+              rel: 'noreferrer'
+            }, e('i', { className: 'fab fa-whatsapp' })),
+            e('a', {
+              className: 'share-btn',
+              title: 'Share on Twitter',
+              href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(blog.title)}&url=${encodeURIComponent(window.location.href)}`,
+              target: '_blank',
+              rel: 'noreferrer'
+            }, e('i', { className: 'fab fa-x-twitter' })),
+            e('a', {
+              className: 'share-btn',
+              title: 'Share on LinkedIn',
+              href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`,
+              target: '_blank',
+              rel: 'noreferrer'
+            }, e('i', { className: 'fab fa-linkedin-in' }))
+          )
+        )
+      )
+    ),
+
+    // Main Container with Hero Image & 2-Column Content
+    e('div', { className: 'container' },
+      // Article Hero Media & Slogan Banner (Faithful to Page 1 of PDF)
+      e('div', { className: 'article-hero-media' },
+        e('img', { src: blog.image, alt: blog.imageAlt }),
+        e('div', { className: 'article-hero-banner-box' },
+          e('h3', null,
+            e('i', { className: 'fas fa-tooth' }),
+            ' Healthy teeth. Confident smile.'
+          ),
+          e('div', { className: 'article-hero-banner-pills' },
+            e('span', null, 'Prevention'),
+            e('span', null, 'Treatment'),
+            e('span', null, 'Care')
+          )
+        )
+      ),
+
+      // 2-Column Layout (Sidebar Table of Contents + Main Body)
+      e('div', { className: 'article-layout-grid' },
+        // Left Sticky Sidebar
+        e('aside', { className: 'article-sidebar' },
+          // Table of Contents
+          e('div', { className: 'sidebar-widget' },
+            e('div', { className: 'sidebar-widget-title' },
+              e('i', { className: 'fas fa-list-ul' }), ' Table of Contents'
+            ),
+            e('ul', { className: 'toc-list' },
+              e('li', null, e('a', { href: '#intro', className: 'toc-link' }, 'Introduction & Target Audience')),
+              e('li', null, e('a', { href: '#importance', className: 'toc-link' }, 'Why Dental Care Is Important')),
+              e('li', null, e('a', { href: '#problems', className: 'toc-link' }, 'Common Dental Problems')),
+              e('li', null, e('a', { href: '#services', className: 'toc-link' }, 'Dental Services & Treatments')),
+              e('li', null, e('a', { href: '#benefits', className: 'toc-link' }, 'Benefits at a Glance Table')),
+              e('li', null, e('a', { href: '#choose-clinic', className: 'toc-link' }, 'How to Choose Right Clinic')),
+              e('li', null, e('a', { href: '#why-clove', className: 'toc-link' }, 'Why Choose Clove Dental')),
+              e('li', null, e('a', { href: '#how-to-book', className: 'toc-link' }, 'Step-by-Step Booking')),
+              e('li', null, e('a', { href: '#tips', className: 'toc-link' }, '6 Habits for Healthy Teeth')),
+              e('li', null, e('a', { href: '#warning-signs', className: 'toc-link' }, 'Signs You Must Not Ignore')),
+              e('li', null, e('a', { href: '#faqs', className: 'toc-link' }, 'Frequently Asked Questions')),
+              e('li', null, e('a', { href: '#cta', className: 'toc-link' }, 'Book Dental Consultation')),
+              e('li', null, e('a', { href: '#marketing-report', className: 'toc-link' }, 'Marketing & SEO Report'))
+            )
+          ),
+
+          // Sidebar CTA Widget
+          e('div', { className: 'sidebar-cta-card' },
+            e('i', { className: 'fas fa-calendar-check cta-icon' }),
+            e('h4', null, 'Need Dental Care?'),
+            e('p', null, 'Consult with 1,700+ specialist dentists across 730+ Clove Dental clinics.'),
+            e('button', {
+              className: 'btn btn-primary',
+              style: { width: '100%', background: 'var(--accent-orange)' },
+              onClick: () => openBooking()
+            }, 'Book Appointment')
+          ),
+
+          // Quick Author Profile
+          e('div', { className: 'sidebar-widget' },
+            e('div', { className: 'sidebar-widget-title' },
+              e('i', { className: 'fas fa-user-pen' }), ' Author Profile'
+            ),
+            e('p', { style: { fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: '1.6' } },
+              e('strong', null, 'Pranathi'), ' is an SEO and Healthcare Content Specialist focusing on evidence-based dental education, preventive oral health, and patient-centric guides for Clove Dental.'
+            )
+          )
+        ),
+
+        // Right Main Content Column
+        e('div', { className: 'article-main-body' },
+
+          /* 1. INTRODUCTION */
+          e('section', { id: 'intro', className: 'article-content-block' },
+            e('h2', { className: 'article-section-title' }, 'Introduction'),
+            (blog.intro.paragraphs || []).map((p, idx) =>
+              e('p', { key: idx, className: 'article-text-p' }, p)
+            ),
+
+            e('div', { className: 'article-callout-box' },
+              e('i', { className: 'fas fa-heart-pulse' }),
+              e('div', { className: 'article-callout-content' },
+                e('strong', null, 'Core Mission'),
+                e('p', null, blog.intro.heroBanner || "Healthy teeth and a confident smile start with regular dental care.")
+              )
+            ),
+
+            e('h3', { style: { fontSize: '1.4rem', margin: '2rem 0 1rem 0' } }, 'Who This Blog Is For'),
+            e('p', { className: 'article-text-p' }, 'This comprehensive guide is designed for individuals and families at every stage of their oral health journey:'),
+            e('div', { className: 'target-audience-grid' },
+              (blog.whoThisBlogIsFor || []).map((item, idx) =>
+                e('div', { key: idx, className: 'target-audience-item' },
+                  e('i', { className: 'fas fa-circle-check' }),
+                  e('span', null, item)
+                )
+              )
+            )
+          ),
+
+          /* 2. WHY DENTAL CARE IS IMPORTANT */
+          e('section', { id: 'importance', className: 'article-content-block' },
+            e('h2', { className: 'article-section-title' }, 'Why Dental Care Is Important'),
+            e('p', { className: 'article-text-p' }, blog.whyDentalCareIsImportant.lead),
+
+            e('div', { className: 'article-callout-box' },
+              e('i', { className: 'fas fa-lightbulb' }),
+              e('div', { className: 'article-callout-content' },
+                e('strong', null, 'Key Point'),
+                e('p', null, blog.whyDentalCareIsImportant.keyPoint)
+              )
+            ),
+
+            e('h4', { style: { fontSize: '1.15rem', margin: '1.5rem 0 1rem 0' } }, 'Key Benefits of Routine Professional Dental Care:'),
+            e('div', { className: 'target-audience-grid' },
+              (blog.whyDentalCareIsImportant.benefits || []).map((benefit, idx) =>
+                e('div', { key: idx, className: 'target-audience-item' },
+                  e('i', { className: 'fas fa-shield-halved' }),
+                  e('span', null, benefit)
+                )
+              )
+            )
+          ),
+
+          /* 3. COMMON DENTAL PROBLEMS */
+          e('section', { id: 'problems', className: 'article-content-block' },
+            e('h2', { className: 'article-section-title' }, 'Common Dental Problems'),
+            e('p', { className: 'article-text-p' }, blog.commonDentalProblems.intro),
+
+            // Visual illustrations matching Page 2 of PDF
+            e('div', { className: 'problems-illustrations-grid' },
+              (blog.commonDentalProblems.illustrations || []).map((ill, idx) =>
+                e('div', { key: idx, className: `problem-illustration-card ${ill.status}` },
+                  e('div', { className: 'problem-illustration-icon' },
+                    e('i', { className: `fas ${ill.icon}` })
+                  ),
+                  e('h4', null, ill.title),
+                  e('p', null, ill.desc)
+                )
+              )
+            ),
+
+            e('p', { style: { fontStyle: 'italic', fontSize: '0.85rem', color: 'var(--text-light)', textAlign: 'center', marginBottom: '1.5rem' } },
+              'Illustration: a healthy tooth, tooth decay and gum problems'
+            ),
+
+            // Detailed Problems List
+            e('div', { className: 'dental-problems-list' },
+              (blog.commonDentalProblems.items || []).map((item, idx) =>
+                e('div', { key: idx, className: 'problem-list-item' },
+                  e('i', { className: `fas ${item.icon}` }),
+                  e('div', null,
+                    e('strong', null, item.name, ': '),
+                    e('span', null, item.desc)
+                  )
+                )
+              )
+            ),
+
+            e('div', { className: 'article-callout-box' },
+              e('i', { className: 'fas fa-clock-rotate-left' }),
+              e('div', { className: 'article-callout-content' },
+                e('strong', null, 'Why it matters'),
+                e('p', null, blog.commonDentalProblems.whyItMatters)
+              )
+            )
+          ),
+
+          /* 4. DENTAL SERVICES & TREATMENTS */
+          e('section', { id: 'services', className: 'article-content-block' },
+            e('h2', { className: 'article-section-title' }, 'Dental Services & Treatments'),
+            e('p', { className: 'article-text-p' }, blog.servicesAndTreatments.intro),
+
+            e('div', { className: 'treatments-article-grid' },
+              (blog.servicesAndTreatments.items || []).map((item, idx) =>
+                e('div', { key: idx, className: 'treatment-article-card' },
+                  e('div', { className: 'treatment-article-card-header' },
+                    e('i', { className: `fas ${item.icon}` }),
+                    e('span', { className: 'treatment-tag' }, item.tag)
+                  ),
+                  e('h4', null, item.title),
+                  e('p', null, item.desc),
+                  e('div', { style: { marginTop: '1rem', display: 'flex', gap: '0.5rem' } },
+                    e('button', {
+                      className: 'btn btn-outline btn-sm',
+                      onClick: () => {
+                        const trtMatch = data.treatments.find(t => t.title.toLowerCase().includes(item.title.toLowerCase().split('/')[0].trim()));
+                        if (trtMatch) setSelectedTreatment(trtMatch);
+                        else openBooking({ treatment: item.title });
+                      }
+                    }, 'Treatment Details'),
+                    e('button', {
+                      className: 'btn btn-primary btn-sm',
+                      onClick: () => openBooking({ treatment: item.title })
+                    }, 'Book')
+                  )
+                )
+              )
+            )
+          ),
+
+          /* 5. DENTAL CARE BENEFITS AT A GLANCE */
+          e('section', { id: 'benefits', className: 'article-content-block' },
+            e('h2', { className: 'article-section-title' }, 'Dental Care Benefits at a Glance'),
+            e('p', { className: 'article-text-p' }, 'Here is a quick summary comparing key dental clinic treatments, how they resolve oral health issues, and their lasting patient benefits:'),
+
+            e('div', { className: 'benefits-table-wrapper' },
+              e('table', { className: 'benefits-table' },
+                e('thead', null,
+                  e('tr', null,
+                    e('th', null, 'Treatment'),
+                    e('th', null, 'How It Helps'),
+                    e('th', null, 'Key Benefit')
+                  )
+                ),
+                e('tbody', null,
+                  (blog.benefitsTable || []).map((row, idx) =>
+                    e('tr', { key: idx },
+                      e('td', null, e('strong', null, row.treatment)),
+                      e('td', null, row.howItHelps),
+                      e('td', null, e('span', { className: 'benefit-badge' }, row.keyBenefit))
+                    )
+                  )
+                )
+              )
+            ),
+
+            e('div', { className: 'article-callout-box' },
+              e('i', { className: 'fas fa-user-check' }),
+              e('div', { className: 'article-callout-content' },
+                e('strong', null, 'Key Point'),
+                e('p', null, blog.benefitsKeyPoint)
+              )
+            )
+          ),
+
+          /* 6. HOW TO CHOOSE THE RIGHT DENTAL CLINIC */
+          e('section', { id: 'choose-clinic', className: 'article-content-block' },
+            e('h2', { className: 'article-section-title' }, 'How to Choose the Right Dental Clinic'),
+            e('p', { className: 'article-text-p' }, blog.howToChooseClinic.intro),
+
+            e('div', { className: 'clinic-checklist' },
+              (blog.howToChooseClinic.factors || []).map((factor, idx) =>
+                e('div', { key: idx, className: 'clinic-checklist-item' },
+                  e('i', { className: 'fas fa-circle-check' }),
+                  e('span', null, factor)
+                )
+              )
+            )
+          ),
+
+          /* 7. WHY CHOOSE CLOVE DENTAL */
+          e('section', { id: 'why-clove', className: 'article-content-block' },
+            e('h2', { className: 'article-section-title' }, 'Why Choose Clove Dental'),
+            e('p', { className: 'article-text-p' }, blog.whyChooseClove.intro),
+
+            e('h4', { style: { fontSize: '1.2rem', marginTop: '1.5rem', marginBottom: '0.5rem', color: 'var(--primary-teal-dark)' } }, 'Services and Treatment Options'),
+            e('p', { className: 'article-text-p' }, blog.whyChooseClove.servicesDesc),
+
+            e('h4', { style: { fontSize: '1.2rem', marginTop: '1.5rem', marginBottom: '0.5rem', color: 'var(--primary-teal-dark)' } }, 'Doctors and Technology'),
+            e('p', { className: 'article-text-p' }, blog.whyChooseClove.doctorsAndTech),
+
+            e('h4', { style: { fontSize: '1.2rem', marginTop: '1.5rem', marginBottom: '0.5rem', color: 'var(--primary-teal-dark)' } }, 'Patient Care'),
+            e('p', { className: 'article-text-p' }, blog.whyChooseClove.patientCare),
+
+            e('h4', { style: { fontSize: '1.2rem', marginTop: '1.5rem', marginBottom: '1rem', color: 'var(--text-dark)' } }, 'Trust Factors:'),
+            e('div', { className: 'trust-factors-grid' },
+              e('div', { className: 'trust-factor-card' },
+                e('h3', null, '730+'),
+                e('p', null, 'Clinics Across India')
+              ),
+              e('div', { className: 'trust-factor-card' },
+                e('h3', null, '1,700+'),
+                e('p', null, 'Expert Dentists')
+              ),
+              e('div', { className: 'trust-factor-card' },
+                e('h3', null, '30 Lakh+'),
+                e('p', null, 'Happy Patients Served')
+              ),
+              e('div', { className: 'trust-factor-card' },
+                e('h3', null, '100%'),
+                e('p', null, 'Painless RCT, Implants & Braces')
+              )
+            ),
+
+            e('div', { className: 'article-callout-box' },
+              e('i', { className: 'fas fa-hand-holding-medical' }),
+              e('div', { className: 'article-callout-content' },
+                e('strong', null, 'Why it matters'),
+                e('p', null, blog.whyChooseClove.whyItMatters)
+              )
+            ),
+
+            e('div', { style: { textAlign: 'center', margin: '2rem 0', padding: '1rem', background: '#F0FDFA', borderRadius: 'var(--radius-md)' } },
+              e('h3', { style: { color: 'var(--primary-teal)', fontSize: '1.4rem', fontWeight: '700' } },
+                '“' + blog.whyChooseClove.tagline + '”'
+              )
+            )
+          ),
+
+          /* 8. STEP-BY-STEP: HOW TO BOOK A DENTAL CONSULTATION */
+          e('section', { id: 'how-to-book', className: 'article-content-block' },
+            e('h2', { className: 'article-section-title' }, 'Step-by-Step: How to Book a Dental Consultation'),
+            e('p', { className: 'article-text-p' }, 'Booking a dental consultation is simple. Here is a quick guide:'),
+
+            e('div', { className: 'consultation-steps-grid' },
+              (blog.howToBook || []).map((st) =>
+                e('div', { key: st.step, className: 'booking-step-card' },
+                  e('div', { className: 'booking-step-number' }, st.step),
+                  e('h4', null, st.title),
+                  e('p', null, st.desc)
+                )
+              )
+            ),
+
+            e('div', { style: { textAlign: 'center', marginTop: '1.5rem' } },
+              e('button', {
+                className: 'btn btn-primary',
+                onClick: () => openBooking()
+              }, e('i', { className: 'fas fa-calendar-check' }), ' Book an Online Consultation Now')
+            )
+          ),
+
+          /* 9. DENTAL CARE TIPS */
+          e('section', { id: 'tips', className: 'article-content-block' },
+            e('h2', { className: 'article-section-title' }, 'Dental Care Tips'),
+            e('p', { className: 'article-text-p', style: { fontWeight: '600', color: 'var(--primary-teal)' } }, blog.dentalCareTips.subtitle),
+
+            e('div', { className: 'habits-grid' },
+              (blog.dentalCareTips.tips || []).map((tip) =>
+                e('div', { key: tip.number, className: 'habit-card' },
+                  e('div', { className: 'habit-card-icon' },
+                    e('i', { className: `fas ${tip.icon}` })
+                  ),
+                  e('h4', null, `${tip.number}. ${tip.title}`),
+                  e('p', null, tip.detail)
+                )
+              )
+            ),
+
+            e('div', { className: 'article-callout-box' },
+              e('i', { className: 'fas fa-shield-virus' }),
+              e('div', { className: 'article-callout-content' },
+                e('strong', null, 'Key Point'),
+                e('p', null, blog.dentalCareTips.keyPoint)
+              )
+            )
+          ),
+
+          /* 10. WHEN SHOULD YOU VISIT A DENTIST? */
+          e('section', { id: 'warning-signs', className: 'article-content-block' },
+            e('h2', { className: 'article-section-title' }, 'When Should You Visit a Dentist?'),
+            e('p', { className: 'article-text-p' }, blog.whenToVisit.intro),
+
+            e('div', { className: 'warning-signs-card' },
+              e('h4', null,
+                e('i', { className: 'fas fa-triangle-exclamation' }),
+                ' Don’t Ignore These Signs'
+              ),
+              e('div', { className: 'warning-signs-grid' },
+                (blog.whenToVisit.signs || []).map((sign, idx) =>
+                  e('div', { key: idx, className: 'warning-sign-item' },
+                    e('i', { className: 'fas fa-circle-exclamation' }),
+                    e('span', null, sign)
+                  )
+                )
+              )
+            )
+          ),
+
+          /* 11. FREQUENTLY ASKED QUESTIONS */
+          e('section', { id: 'faqs', className: 'article-content-block' },
+            e('h2', { className: 'article-section-title' }, 'Frequently Asked Questions'),
+            e('p', { className: 'article-text-p' }, 'Get answers to common queries regarding routine dental visits, root canal treatments, teeth cleaning, implants, and orthodontic care.'),
+
+            e('div', { className: 'article-faq-container' },
+              (blog.faqs || []).map((faq, idx) =>
+                e('div', {
+                  key: idx,
+                  className: `article-faq-item ${activeFaq === idx ? 'active' : ''}`
+                },
+                  e('button', {
+                    className: 'article-faq-question',
+                    onClick: () => setActiveFaq(activeFaq === idx ? null : idx)
+                  },
+                    e('span', null, faq.question),
+                    e('div', { className: 'article-faq-icon' },
+                      e('i', { className: 'fas fa-chevron-down' })
+                    )
+                  ),
+                  activeFaq === idx && e('div', { className: 'article-faq-answer' },
+                    e('p', null, faq.answer)
+                  )
+                )
+              )
+            )
+          ),
+
+          /* 12. SEO KEYWORDS OVERVIEW */
+          e('section', { id: 'seo-keywords', className: 'article-content-block' },
+            e('h3', { style: { fontSize: '1.4rem', marginBottom: '0.75rem', color: 'var(--text-dark)' } }, 'SEO Keywords & Coverage'),
+            e('p', { className: 'article-text-p' }, 'These keywords are naturally integrated throughout the article, headings, introduction, body, and call-to-action sections:'),
+
+            e('div', { className: 'benefits-table-wrapper', style: { margin: '1rem 0' } },
+              e('table', { className: 'benefits-table' },
+                e('thead', null,
+                  e('tr', null,
+                    e('th', { style: { width: '140px' } }, 'Type'),
+                    e('th', null, 'Keywords')
+                  )
+                ),
+                e('tbody', null,
+                  e('tr', null,
+                    e('td', null, e('strong', null, 'Primary')),
+                    e('td', null, (blog.seoKeywords.primary || []).join(', '))
+                  ),
+                  e('tr', null,
+                    e('td', null, e('strong', null, 'Secondary')),
+                    e('td', null, (blog.seoKeywords.secondary || []).join(', '))
+                  )
+                )
+              )
+            )
+          ),
+
+          /* 13. PRIMARY CALL TO ACTION BANNER (MATCHING PAGE 8 OF PDF) */
+          e('section', { id: 'cta', className: 'article-cta-banner' },
+            e('span', { className: 'article-cta-badge' }, e('i', { className: 'fas fa-calendar-check' }), ' Priority Booking'),
+            e('h3', null, 'Take the Next Step Towards a Healthier Smile'),
+            e('p', null, blog.cta.title),
+            e('button', {
+              className: 'btn-cta-large',
+              onClick: () => openBooking()
+            }, e('i', { className: 'fas fa-calendar-alt' }), ' ', blog.cta.buttonText)
+          ),
+
+          /* 14. MARKETING REPORT SECTION (PAGES 9-10 OF PDF) */
+          e('section', { id: 'marketing-report', className: 'marketing-report-accordion' },
+            e('button', {
+              className: 'marketing-report-toggle-btn',
+              onClick: () => setMarketingOpen(!marketingOpen)
+            },
+              e('h3', null,
+                e('i', { className: 'fas fa-chart-line badge-icon' }),
+                ' Marketing Report Section (Competitor Analysis, Content Strategy & KPIs)'
+              ),
+              e('div', { style: { display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--primary-teal)', fontWeight: '700', fontSize: '0.9rem' } },
+                e('span', null, marketingOpen ? 'Collapse Report' : 'Expand Strategy Report'),
+                e('i', { className: `fas fa-chevron-${marketingOpen ? 'up' : 'down'}` })
+              )
+            ),
+
+            marketingOpen && e('div', { className: 'marketing-report-body' },
+              // Competitor Analysis
+              e('div', { className: 'marketing-section-box' },
+                e('h4', null, e('i', { className: 'fas fa-magnifying-glass-chart' }), ' Competitor Analysis'),
+                e('p', { className: 'article-text-p' }, blog.marketingReport.competitorAnalysis.intro),
+                e('ul', { style: { paddingLeft: '1.25rem', marginBottom: '1.25rem', color: 'var(--text-muted)' } },
+                  (blog.marketingReport.competitorAnalysis.types || []).map((t, idx) =>
+                    e('li', { key: idx, style: { marginBottom: '0.4rem' } },
+                      e('strong', { color: 'var(--text-dark)' }, t.type, ': '), t.desc
+                    )
+                  )
+                ),
+
+                e('div', { className: 'benefits-table-wrapper' },
+                  e('table', { className: 'competitor-table' },
+                    e('thead', null,
+                      e('tr', null,
+                        e('th', null, 'Factor'),
+                        e('th', null, 'Clove Dental'),
+                        e('th', null, 'Competitors')
+                      )
+                    ),
+                    e('tbody', null,
+                      (blog.marketingReport.competitorAnalysis.comparisonTable || []).map((r, idx) =>
+                        e('tr', { key: idx },
+                          e('td', null, e('strong', null, r.factor)),
+                          e('td', null, r.clove),
+                          e('td', null, r.competitors)
+                        )
+                      )
+                    )
+                  )
+                ),
+
+                e('div', { style: { padding: '0.75rem 1rem', background: '#FFFBEB', borderRadius: 'var(--radius-sm)', borderLeft: '4px solid #F59E0B', fontSize: '0.85rem', color: '#92400E' } },
+                  e('strong', null, 'Note: '), blog.marketingReport.competitorAnalysis.note
+                )
+              ),
+
+              // Content Strategy & Google Business Profile
+              e('div', { className: 'marketing-section-box' },
+                e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' } },
+                  e('div', null,
+                    e('h4', null, e('i', { className: 'fas fa-pen-nib' }), ' Content Strategy'),
+                    e('div', { className: 'strategy-pills-list' },
+                      (blog.marketingReport.contentStrategy || []).map((cs, idx) =>
+                        e('span', { key: idx, className: 'strategy-pill' }, e('i', { className: 'fas fa-check' }), ' ', cs)
+                      )
+                    )
+                  ),
+                  e('div', null,
+                    e('h4', null, e('i', { className: 'fab fa-google' }), ' Google Business Profile Strategy'),
+                    e('div', { className: 'strategy-pills-list' },
+                      (blog.marketingReport.googleBusinessProfileStrategy || []).map((gbp, idx) =>
+                        e('span', { key: idx, className: 'strategy-pill' }, e('i', { className: 'fas fa-map-pin' }), ' ', gbp)
+                      )
+                    )
+                  )
+                )
+              ),
+
+              // Social Media Plan & KPIs
+              e('div', { className: 'marketing-section-box' },
+                e('h4', null, e('i', { className: 'fas fa-share-nodes' }), ' Social Media Plan'),
+                e('div', { className: 'benefits-table-wrapper' },
+                  e('table', { className: 'competitor-table' },
+                    e('thead', null,
+                      e('tr', null,
+                        e('th', null, 'Platform'),
+                        e('th', null, 'Content Focus')
+                      )
+                    ),
+                    e('tbody', null,
+                      (blog.marketingReport.socialMediaPlan || []).map((sm, idx) =>
+                        e('tr', { key: idx },
+                          e('td', null, e('strong', null, sm.platform)),
+                          e('td', null, sm.content)
+                        )
+                      )
+                    )
+                  )
+                )
+              ),
+
+              e('div', { className: 'marketing-section-box' },
+                e('h4', null, e('i', { className: 'fas fa-bullseye' }), ' Target KPIs'),
+                e('div', { className: 'strategy-pills-list' },
+                  (blog.marketingReport.kpis || []).map((kpi, idx) =>
+                    e('span', { key: idx, className: 'strategy-pill', style: { background: 'var(--primary-teal-light)', borderColor: 'var(--primary-teal-border)', color: 'var(--primary-teal-dark)' } },
+                      e('i', { className: 'fas fa-arrow-trend-up' }), ' ', kpi
+                    )
+                  )
+                )
+              )
+            )
+          ),
+
+          /* 15. ARTICLE FOOTER NAVIGATION */
+          e('div', { className: 'article-navigation-footer' },
+            e('button', {
+              className: 'btn btn-outline',
+              onClick: () => navigateToPage('blog')
+            }, e('i', { className: 'fas fa-arrow-left' }), ' Back to All Articles'),
+
+            e('div', { style: { display: 'flex', gap: '0.75rem', alignItems: 'center' } },
+              e('span', { style: { fontSize: '0.88rem', color: 'var(--text-muted)' } }, 'Share this guide:'),
+              e('button', { className: 'share-btn', onClick: handleCopyLink, title: 'Copy Link' }, e('i', { className: copiedLink ? 'fas fa-check' : 'fas fa-link' })),
+              e('a', { className: 'share-btn', title: 'WhatsApp', href: `https://api.whatsapp.com/send?text=${encodeURIComponent(blog.title + ' ' + window.location.href)}`, target: '_blank', rel: 'noreferrer' }, e('i', { className: 'fab fa-whatsapp' }))
+            )
+          )
+        )
+      )
+    )
+  );
+}
 
 /* 9. AI CHATBOT COMPONENT */
-function AIChatbot({ openBooking, setActivePage }) {
+function AIChatbot({ openBooking, setActivePage, viewArticle }) {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([
@@ -760,6 +1817,10 @@ function AIChatbot({ openBooking, setActivePage }) {
   const generateVerifiedResponse = (query) => {
     const q = query.toLowerCase();
     const data = window.CLOVE_DATA;
+
+    if (q.includes('blog') || q.includes('guide') || q.includes('pranathi') || q.includes('dental care guide') || q.includes('tips') || q.includes('habits')) {
+      return "You can explore our comprehensive 'Complete Dental Care Guide: Treatments, Prevention & Healthy Smile Tips' in our new Blog section! It covers preventive care, root canal treatments, dental implants, teeth cleaning, braces, dental care habits, and FAQs.";
+    }
 
     if (q.includes('best dentist') || q.includes('who is the best')) {
       return "I can help you find a Clove Dental dentist based on specialization and location. Which city or treatment are you looking for?";
@@ -840,9 +1901,9 @@ function AIChatbot({ openBooking, setActivePage }) {
       ),
 
       e('div', { className: 'suggested-prompts', style: { padding: '0.5rem 0.85rem' } },
-        e('span', { className: 'prompt-chip', onClick: () => handleSend('Do you have an orthodontist in Hyderabad?') }, 'Orthodontist in Hyderabad?'),
-        e('span', { className: 'prompt-chip', onClick: () => handleSend('What are your clinic timings?') }, 'Clinic Timings?'),
-        e('span', { className: 'prompt-chip', onClick: () => handleSend('Tell me about Root Canal Treatment') }, 'Root Canal Treatment')
+        e('span', { className: 'prompt-chip', onClick: () => { setIsOpen(false); viewArticle ? viewArticle('complete-dental-care-guide') : setActivePage('blog'); } }, 'Complete Dental Care Guide'),
+        e('span', { className: 'prompt-chip', onClick: () => handleSend('Tell me about Root Canal Treatment') }, 'Root Canal Treatment'),
+        e('span', { className: 'prompt-chip', onClick: () => handleSend('What are your clinic timings?') }, 'Clinic Timings?')
       ),
 
       e('div', { className: 'chatbot-input-area' },
@@ -1009,7 +2070,7 @@ function AppointmentModal({ preselect, onClose }) {
 }
 
 /* FOOTER */
-function Footer({ setActivePage, openBooking }) {
+function Footer({ setActivePage, openBooking, viewArticle, navigateToPage }) {
   const info = window.CLOVE_DATA.contactInfo;
 
   return e('footer', { className: 'footer' },
@@ -1037,6 +2098,7 @@ function Footer({ setActivePage, openBooking }) {
             e('li', null, e('a', { href: '#', onClick: (ev) => { ev.preventDefault(); setActivePage('doctors'); } }, 'Our Doctors')),
             e('li', null, e('a', { href: '#', onClick: (ev) => { ev.preventDefault(); setActivePage('services'); } }, 'Services')),
             e('li', null, e('a', { href: '#', onClick: (ev) => { ev.preventDefault(); setActivePage('treatments'); } }, 'Treatments')),
+            e('li', null, e('a', { href: '#', onClick: (ev) => { ev.preventDefault(); navigateToPage ? navigateToPage('blog') : setActivePage('blog'); } }, 'Blog & Dental Guides')),
             e('li', null, e('a', { href: '#', onClick: (ev) => { ev.preventDefault(); setActivePage('gallery'); } }, 'Gallery')),
             e('li', null, e('a', { href: '#', onClick: (ev) => { ev.preventDefault(); setActivePage('testimonials'); } }, 'Testimonials')),
             e('li', null, e('a', { href: '#', onClick: (ev) => { ev.preventDefault(); setActivePage('contact'); } }, 'Contact & Clinics'))
@@ -1048,6 +2110,7 @@ function Footer({ setActivePage, openBooking }) {
           e('ul', { className: 'footer-links' },
             e('li', null, e('a', { href: '#', onClick: (ev) => { ev.preventDefault(); openBooking(); } }, 'Book Appointment')),
             e('li', null, e('a', { href: '#', onClick: (ev) => { ev.preventDefault(); setActivePage('contact'); } }, 'Find Clinic Near Me')),
+            e('li', null, e('a', { href: '#', onClick: (ev) => { ev.preventDefault(); viewArticle ? viewArticle('complete-dental-care-guide') : setActivePage('blog-article'); } }, 'Complete Dental Care Guide')),
             e('li', null, e('a', { href: '#', onClick: (ev) => { ev.preventDefault(); setActivePage('treatments'); } }, 'Root Canal Treatment')),
             e('li', null, e('a', { href: '#', onClick: (ev) => { ev.preventDefault(); setActivePage('treatments'); } }, 'Dental Implants')),
             e('li', null, e('a', { href: '#', onClick: (ev) => { ev.preventDefault(); setActivePage('treatments'); } }, 'Clear Aligners'))
@@ -1076,11 +2139,18 @@ function Footer({ setActivePage, openBooking }) {
   );
 }
 
-// Mount React App when window loads
-window.addEventListener('DOMContentLoaded', () => {
+// Mount React App safely regardless of document readyState
+function mountApp() {
   const rootElement = document.getElementById('root');
-  if (rootElement && window.ReactDOM) {
+  if (rootElement && window.ReactDOM && !window.__CLOVE_MOUNTED__) {
+    window.__CLOVE_MOUNTED__ = true;
     const root = ReactDOM.createRoot(rootElement);
     root.render(e(App));
   }
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', mountApp);
+} else {
+  mountApp();
+}

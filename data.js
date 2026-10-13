@@ -675,5 +675,337 @@ window.CLOVE_DATA = {
     patientCareEmail: "patientcare@clovedental.in",
     helplineNorth: "+91 9667352322",
     helplineSouth: "+91 9393552322"
-  }
+  },
+
+  blogs: [
+    {
+      id: "complete-dental-care-guide",
+      slug: "complete-dental-care-guide",
+      title: "Complete Dental Care Guide: Treatments, Prevention & Healthy Smile Tips",
+      subtitle: "A comprehensive guide to understanding common dental problems, modern treatments, daily oral hygiene habits, and finding the right dental clinic for your family.",
+      shortDesc: "Healthy teeth do more than make a good smile—they protect your overall wellness. Explore common dental problems, professional dental clinic treatments like root canal and dental implants, daily hygiene tips, and how to choose the right clinic.",
+      submittedBy: "Pranathi",
+      brand: "Clove Dental",
+      documentType: "SEO and Marketing-Focused Dental Blog with Marketing Report Sections",
+      category: "Dental Health & Prevention",
+      readTime: "7 min read",
+      publishedDate: "October 2026",
+      featured: true,
+      image: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=1200&q=80",
+      imageAlt: "Dentist performing oral examination and professional dental care at modern Clove Dental clinic",
+      tags: ["dental clinic", "dental care", "dental treatment", "dentist", "root canal treatment", "dental implants", "teeth cleaning", "braces", "teeth whitening", "cosmetic dentistry", "oral health"],
+      
+      intro: {
+        paragraphs: [
+          "Healthy teeth do more than make a good smile. They help you eat comfortably, speak clearly and feel confident, and good dental care is closely linked to your overall health. Even so, many of us put off a visit until a small problem turns into a painful one. Tooth decay, gum problems, sensitive teeth and stained or crooked teeth are some of the most common reasons people walk into a dental clinic.",
+          "The good news is that most of these problems are easier to manage when they are caught early. Professional dental treatment from a trusted dentist keeps small issues from growing and helps you protect your oral health for the long run. At Clove Dental, the focus is on complete, comfortable care for every member of the family. This guide walks you through common dental problems, the treatments available, how to choose the right clinic and the everyday habits that keep your smile strong."
+        ],
+        heroBanner: "Healthy teeth and a confident smile start with regular dental care"
+      },
+      
+      whoThisBlogIsFor: [
+        "Families looking for one reliable dental clinic for every age",
+        "Children and parents who want gentle, preventive dental care from an early age",
+        "Students who need simple, convenient check-ups and teeth cleaning",
+        "Working professionals who want effective treatment with an easy appointment process",
+        "People with dental problems such as toothache, cavities or gum trouble",
+        "People interested in cosmetic dentistry, such as teeth whitening, braces or a smile makeover"
+      ],
+
+      whyDentalCareIsImportant: {
+        lead: "Your mouth is the starting point of your health. Daily brushing and flossing remove most of the plaque that builds up on teeth, but only a dentist can spot hidden problems and clean the areas your toothbrush cannot reach. Looking after your teeth regularly also costs far less, in both time and money, than repairing advanced damage later.",
+        keyPoint: "Regular dental check-ups can help identify problems early and maintain better oral health.",
+        benefits: [
+          "Early detection of cavities and gum problems",
+          "Cleaner teeth and fresher breath",
+          "Lower risk of painful, complicated treatment",
+          "Better chewing, speech and confidence"
+        ]
+      },
+
+      commonDentalProblems: {
+        intro: "Most visits to a dental clinic are linked to a few familiar problems. Knowing them helps you act at the right time.",
+        items: [
+          { name: "Tooth decay", desc: "cavities caused by plaque, sugar and poor brushing habits", icon: "fa-bacteria" },
+          { name: "Tooth pain", desc: "often a sign of decay, infection or damage", icon: "fa-bolt" },
+          { name: "Gum problems", desc: "bleeding, swelling or redness while brushing", icon: "fa-droplet" },
+          { name: "Sensitive teeth", desc: "a sharp reaction to hot, cold or sweet things", icon: "fa-snowflake" },
+          { name: "Tooth discoloration", desc: "stains from tea, coffee, tobacco or ageing", icon: "fa-brush" },
+          { name: "Missing teeth", desc: "gaps that affect chewing, speech and appearance", icon: "fa-tooth" },
+          { name: "Misaligned teeth", desc: "crooked or crowded teeth that are hard to keep clean", icon: "fa-grip-lines-vertical" }
+        ],
+        illustrations: [
+          { title: "Healthy tooth", desc: "Strong enamel, healthy gums", status: "healthy", icon: "fa-shield-heart" },
+          { title: "Tooth decay", desc: "Plaque and sugar create cavities", status: "warning", icon: "fa-biohazard" },
+          { title: "Gum problems", desc: "Red, swollen, bleeding gums", status: "danger", icon: "fa-triangle-exclamation" }
+        ],
+        whyItMatters: "A small cavity treated today can save you from a root canal tomorrow."
+      },
+
+      servicesAndTreatments: {
+        intro: "A good dental clinic brings all the dental services you may need under one roof. Here is a simple guide to the most common treatments.",
+        items: [
+          {
+            title: "Dental Check-ups",
+            desc: "A routine check-up lets the dentist examine your teeth and gums, find problems early and suggest a care plan that suits you. It is the foundation of preventive dental care.",
+            icon: "fa-clipboard-check",
+            tag: "Preventive Care"
+          },
+          {
+            title: "Teeth Cleaning",
+            desc: "Professional teeth cleaning removes plaque and tartar that brushing cannot, leaving your gums healthier and your breath fresher.",
+            icon: "fa-sparkles",
+            tag: "Preventive & Hygiene"
+          },
+          {
+            title: "Root Canal Treatment",
+            desc: "Root canal treatment is used when the inside of a tooth is infected or badly damaged. It relieves pain and saves the natural tooth instead of removing it, and it is done with local anaesthesia for comfort.",
+            icon: "fa-tooth",
+            tag: "Endodontics"
+          },
+          {
+            title: "Dental Implants",
+            desc: "Dental implants replace missing teeth with a fixed, natural-looking solution that supports chewing, speech and your facial appearance.",
+            icon: "fa-screwdriver-wrench",
+            tag: "Implantology"
+          },
+          {
+            title: "Braces / Aligners",
+            desc: "Braces and clear aligners gradually move teeth into the right position, improving your bite, making cleaning easier and enhancing your smile.",
+            icon: "fa-teeth",
+            tag: "Orthodontics"
+          },
+          {
+            title: "Teeth Whitening",
+            desc: "Teeth whitening lightens stains and brightens your smile, a popular choice before weddings, interviews and special occasions.",
+            icon: "fa-wand-magic-sparkles",
+            tag: "Cosmetic Dentistry"
+          },
+          {
+            title: "Cosmetic Dentistry",
+            desc: "Cosmetic dentistry includes treatments that improve the shape, colour and look of your teeth while keeping them healthy.",
+            icon: "fa-gem",
+            tag: "Aesthetics"
+          },
+          {
+            title: "Gum Treatment",
+            desc: "Gum treatment helps manage swelling, bleeding and infection around the teeth, protecting the foundation that holds your teeth in place.",
+            icon: "fa-heart-pulse",
+            tag: "Periodontics"
+          }
+        ]
+      },
+
+      benefitsTable: [
+        { treatment: "Check-ups", howItHelps: "Spot cavities and gum problems before they become painful", keyBenefit: "Early detection" },
+        { treatment: "Teeth Cleaning", howItHelps: "Removes plaque and tartar that brushing cannot reach", keyBenefit: "Healthier gums" },
+        { treatment: "Root Canal Treatment", howItHelps: "Relieves pain and saves an infected natural tooth", keyBenefit: "Pain relief" },
+        { treatment: "Dental Implants", howItHelps: "Replaces missing teeth with a fixed, natural-looking option", keyBenefit: "Lasting function" },
+        { treatment: "Braces / Aligners", howItHelps: "Gradually straightens teeth and improves the bite", keyBenefit: "Better alignment" },
+        { treatment: "Teeth Whitening", howItHelps: "Lightens stains and brightens the smile", keyBenefit: "Added confidence" }
+      ],
+      benefitsKeyPoint: "Every smile is different. A personal consultation helps your dentist recommend the dental treatment that truly fits your needs.",
+
+      howToChooseClinic: {
+        intro: "Choosing a dental clinic is a decision about your comfort and your health. Look for these factors:",
+        factors: [
+          "Qualified dentists with the experience to handle your needs",
+          "Range of treatments so the whole family is covered in one place",
+          "Modern technology for accurate diagnosis and comfortable treatment",
+          "Hygiene and safety with strict sterilisation standards",
+          "Patient experience that is caring, patient and transparent",
+          "Easy appointment process, ideally with online booking",
+          "Location and accessibility that make regular visits practical"
+        ]
+      },
+
+      whyChooseClove: {
+        intro: "Clove Dental is built around trust, convenience and complete care. Here is what patients can look forward to.",
+        servicesDesc: "From check-ups and teeth cleaning to root canal treatment, dental implants, braces and aligners, the clinic offers a wide range of dental treatment options, so most needs can be handled in one place.",
+        doctorsAndTech: "A large team of expert dentists works with modern dental technology to provide accurate, comfortable and painless care.",
+        patientCare: "Treatment is explained clearly, comfort comes first and booking an appointment is simple.",
+        trustFactors: [
+          "A network of 730+ clinics across India",
+          "1,700+ expert dentists",
+          "Over 30 lakh patients served",
+          "Painless root canal treatment, dental implants, braces and aligners"
+        ],
+        whyItMatters: "A trusted dental clinic network gives families a single dependable place for routine care, urgent problems and cosmetic dentistry.",
+        tagline: "A healthy smile starts with a single check-up."
+      },
+
+      howToBook: [
+        { step: 1, title: "Choose your clinic", desc: "Select a Clove Dental clinic that is convenient for you." },
+        { step: 2, title: "Select the care you need", desc: "Pick a routine check-up, teeth cleaning or the treatment you want to discuss." },
+        { step: 3, title: "Pick a date and time", desc: "Choose a slot that fits your schedule." },
+        { step: 4, title: "Share basic details", desc: "Provide your contact details so the clinic can reach you." },
+        { step: 5, title: "Confirm and visit", desc: "Confirm your booking and arrive for your consultation." }
+      ],
+
+      dentalCareTips: {
+        subtitle: "Six simple habits for healthier teeth and gums",
+        tips: [
+          { number: 1, title: "Brush twice a day", detail: "Use fluoride toothpaste for two minutes, morning and night.", icon: "fa-tooth" },
+          { number: 2, title: "Floss regularly", detail: "Cleaning between your teeth removes plaque your brush cannot reach.", icon: "fa-teeth-open" },
+          { number: 3, title: "Limit sugary foods", detail: "Fewer sugary snacks and drinks means fewer cavities.", icon: "fa-ban" },
+          { number: 4, title: "Drink enough water", detail: "Water helps rinse away food particles, especially after meals.", icon: "fa-glass-water" },
+          { number: 5, title: "Replace your toothbrush regularly", detail: "About every three months, or sooner if the bristles look worn.", icon: "fa-arrows-rotate" },
+          { number: 6, title: "Visit a dentist for regular check-ups", detail: "Routine visits catch problems early and keep your teeth professionally clean.", icon: "fa-calendar-check" }
+        ],
+        keyPoint: "Healthy daily habits combined with professional preventive dental care are the best protection against cavities and gum problems."
+      },
+
+      whenToVisit: {
+        intro: "Do not wait for the pain to become unbearable. Book a visit as soon as you notice any of these signs.",
+        signs: [
+          "Persistent tooth pain",
+          "Bleeding gums",
+          "Tooth sensitivity",
+          "Swelling",
+          "Broken or loose tooth",
+          "Persistent bad breath"
+        ]
+      },
+
+      faqs: [
+        {
+          question: "How often should I visit a dentist?",
+          answer: "Most people benefit from a check-up and teeth cleaning about every six months, or as advised by their dentist."
+        },
+        {
+          question: "When is root canal treatment needed?",
+          answer: "It is needed when the inner part of a tooth is infected or damaged, often causing severe pain, swelling or lasting sensitivity."
+        },
+        {
+          question: "Is teeth cleaning necessary?",
+          answer: "Yes. Professional teeth cleaning removes plaque and tartar that brushing cannot, and helps protect your gums and teeth."
+        },
+        {
+          question: "Are dental implants right for everyone?",
+          answer: "It depends on your oral health and bone condition. A consultation will show whether implants are the best option for you."
+        },
+        {
+          question: "Is teeth whitening safe?",
+          answer: "When done professionally and as advised by your dentist, teeth whitening is a widely used cosmetic treatment."
+        },
+        {
+          question: "At what age should children first see a dentist?",
+          answer: "Early visits help build good habits, so children should see a dentist from a young age, as advised by the dentist."
+        },
+        {
+          question: "How can I book an appointment?",
+          answer: "You can book a dental consultation online through the appointment option, or contact the clinic directly."
+        }
+      ],
+
+      seoKeywords: {
+        primary: ["dental clinic", "dental care", "dental treatment", "dentist"],
+        secondary: ["root canal treatment", "dental implants", "teeth cleaning", "braces", "teeth whitening", "cosmetic dentistry", "oral health"]
+      },
+
+      cta: {
+        title: "Take the next step towards a healthier smile. Book a dental consultation today and get the right care for your dental needs.",
+        buttonText: "BOOK A DENTAL CONSULTATION"
+      },
+
+      marketingReport: {
+        title: "Marketing Report Section",
+        competitorAnalysis: {
+          intro: "Clove Dental competes with several types of providers. Understanding them helps shape a stronger marketing approach.",
+          types: [
+            { type: "Major dental clinic competitors", desc: "other large dental clinic chains" },
+            { type: "Local dental clinics", desc: "independent clinics serving nearby neighbourhoods" },
+            { type: "Multi-speciality dental hospitals", desc: "larger centres offering dental care alongside other specialities" }
+          ],
+          comparisonTable: [
+            { factor: "Services comparison", clove: "Wide range of treatments in one place", competitors: "Varies by clinic" },
+            { factor: "Online presence", clove: "Strong website with online appointment option", competitors: "Depends on the clinic" },
+            { factor: "Customer engagement", clove: "Blogs, social media and review responses recommended", competitors: "Depends on the clinic" },
+            { factor: "Patient reviews", clove: "Use verified review data only", competitors: "Compare using verified data" }
+          ],
+          note: "Competitor figures and patient reviews should be added only from verified sources. No unverified numbers have been used here."
+        },
+        contentStrategy: [
+          "Educational blogs",
+          "Dental care tips",
+          "Treatment guides",
+          "FAQs",
+          "Patient education",
+          "Social media content"
+        ],
+        googleBusinessProfileStrategy: [
+          "Regular posts",
+          "Clinic photos",
+          "Treatment updates",
+          "Patient reviews",
+          "FAQs",
+          "Contact and appointment information"
+        ],
+        socialMediaPlan: [
+          { platform: "Instagram", content: "Reels, dental tips, visuals" },
+          { platform: "Facebook", content: "Educational posts, updates" },
+          { platform: "YouTube", content: "Treatment explanation videos" },
+          { platform: "Google", content: "Reviews and business updates" }
+        ],
+        kpis: [
+          "Website traffic",
+          "Organic traffic",
+          "Keyword rankings",
+          "Blog views",
+          "Appointment enquiries",
+          "Conversion rate",
+          "Social media engagement",
+          "Google Business Profile interactions"
+        ]
+      }
+    },
+    {
+      id: "root-canal-treatment-guide",
+      slug: "root-canal-treatment-guide",
+      title: "Root Canal Treatment: Signs, Modern Procedures & Saving Your Natural Tooth",
+      subtitle: "Why root canal treatment is comfortable, effective, and crucial for saving an infected tooth.",
+      shortDesc: "Demystifying root canal therapy: discover why modern rotary endodontics makes treatment virtually painless while preserving your natural tooth structure for life.",
+      submittedBy: "Dr. Ananya Roy (MDS Endodontics)",
+      brand: "Clove Dental",
+      category: "Treatments & Procedures",
+      readTime: "5 min read",
+      publishedDate: "September 2026",
+      featured: false,
+      image: "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=600&q=80",
+      imageAlt: "Dentist performing comfortable root canal treatment at Clove Dental",
+      tags: ["root canal treatment", "dental clinic", "dental care", "dentist", "oral health"]
+    },
+    {
+      id: "dental-implants-vs-dentures",
+      slug: "dental-implants-vs-dentures",
+      title: "Dental Implants vs Dentures: Choosing the Best Permanent Tooth Replacement",
+      subtitle: "Compare aesthetics, durability, and bone health between titanium dental implants and dentures.",
+      shortDesc: "Explore how permanent dental implants preserve jawbone density and restore 100% chewing efficiency compared to traditional removable dentures.",
+      submittedBy: "Dr. Vikram Sethi (MDS Prosthodontics)",
+      brand: "Clove Dental",
+      category: "Restorative Dentistry",
+      readTime: "6 min read",
+      publishedDate: "September 2026",
+      featured: false,
+      image: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=600&q=80",
+      imageAlt: "Titanium dental implants and restorative dentistry solutions",
+      tags: ["dental implants", "dental clinic", "dental treatment", "dentist", "cosmetic dentistry"]
+    },
+    {
+      id: "daily-oral-hygiene-essentials",
+      slug: "daily-oral-hygiene-essentials",
+      title: "Why Professional Teeth Cleaning Every 6 Months Protects Your Heart & Smile",
+      subtitle: "The medical connection between regular teeth cleaning, gum health, and systemic wellness.",
+      shortDesc: "Brushing only cleans 60% of tooth surfaces. Learn why professional ultrasonic scaling eliminates calculus, prevents gingivitis, and keeps breath fresh.",
+      submittedBy: "Dr. R. Suresh Kumar (Periodontist)",
+      brand: "Clove Dental",
+      category: "Dental Health & Prevention",
+      readTime: "4 min read",
+      publishedDate: "August 2026",
+      featured: false,
+      image: "https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&w=600&q=80",
+      imageAlt: "Patient smiling after routine teeth cleaning and oral check-up",
+      tags: ["teeth cleaning", "dental clinic", "dental care", "dentist", "gum care"]
+    }
+  ]
 };
